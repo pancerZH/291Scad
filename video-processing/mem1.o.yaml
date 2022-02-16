@@ -1,0 +1,7 @@
+type: memory
+corunning:
+    - func1
+    - func2
+    - func3
+limits:
+    mem: 60 MB

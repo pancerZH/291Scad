@@ -40,6 +40,8 @@ if __name__ == '__main__':
                 .reshape([height, width, 3])
         )
 
+        # could split here
+
         # 渐变式局部滤镜视频，过渡时间 5 秒，帧率为 30，则此处设置的值为 150
         in_frame_bgr = cv2.cvtColor(in_frame, cv2.COLOR_RGB2BGR)
         current_width = int(width * (frame_index / 150))
