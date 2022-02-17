@@ -18,7 +18,6 @@
 #@     type: rdma
 
 import pickle
-import threading
 import numpy as np
 import base64
 import disaggrt.buffer_pool_lib as buffer_pool_lib
@@ -28,8 +27,6 @@ import ffmpeg
 import cv2
 
 SERVER_NUM = 4
-LOCK1 = threading.Lock()
-LOCK2 = threading.Lock()
 
 def cyberpunk(image):
     # 反转色相
@@ -65,14 +62,10 @@ def cyberpunk(image):
 
 def processFrame(count, context_dict, action, width):
     mem_name = "mem" + str(count)
-    LOCK1.acquire()
     trans = action.get_transport(mem_name, 'rdma')
-    LOCK1.release()
     trans.reg(buffer_pool_lib.buffer_size)
 
-    LOCK1.acquire()
     buffer_pool = buffer_pool_lib.buffer_pool({mem_name:trans}, context_dict["buffer_pool_metadata" + str(count)])
-    LOCK1.release()
     load_frames_remote = remote_array(buffer_pool, metadata=context_dict["remote_input" + str(count)])
     in_frame = load_frames_remote.materialize()
     frame_num = len(in_frame)
@@ -90,16 +83,13 @@ def processFrame(count, context_dict, action, width):
             frame_index += 1
     
     out_frame = np.asarray(frame_list)
-    LOCK1.acquire()
+    # I DON'T KNOW WHY GET IT AGAIN
     buffer_pool = buffer_pool_lib.buffer_pool({mem_name:trans}, context_dict["buffer_pool_metadata" + str(count)])
-    LOCK1.release()
     remote_output = remote_array(buffer_pool, input_ndarray=out_frame, transport_name=mem_name)
     # update context
     remote_input_metadata = remote_output.get_array_metadata()
-    LOCK2.acquire()
     context_dict["remote_output" + str(count)] = remote_input_metadata
     context_dict["buffer_pool_metadata" + str(count)] = buffer_pool.get_buffer_metadata()
-    LOCK2.release()
 
 
 def main(params, action):
@@ -112,17 +102,8 @@ def main(params, action):
     context_dict_in_byte = base64.b64decode(context_dict_in_b64)
     context_dict = pickle.loads(context_dict_in_byte)
 
-    threads = []
     for i in range(1, SERVER_NUM+1):
-        t = threading.Thread(target=processFrame, args=(i, context_dict, action, width))
-        t.start()
-        threads.append(t)
-
-    count = 0
-    for t in threads:
-        count += 1
-        print(count)
-        t.join()
+        processFrame(i, context_dict, action, width)
 
     context_dict_in_byte = pickle.dumps(context_dict)
     return {'meta': base64.b64encode(context_dict_in_byte).decode("ascii")}
