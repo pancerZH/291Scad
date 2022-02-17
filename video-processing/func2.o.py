@@ -27,6 +27,7 @@ from disaggrt.rdma_array import remote_array
 import ffmpeg
 import cv2
 
+SERVER_NUM = 4
 LOCK1 = threading.Lock()
 LOCK2 = threading.Lock()
 
@@ -74,18 +75,18 @@ def processFrame(count, context_dict, action, width):
     LOCK1.release()
     load_frames_remote = remote_array(buffer_pool, metadata=context_dict["remote_input" + str(count)])
     in_frame = load_frames_remote.materialize()
-
-    frame_index = 1 if count == 1 else 150
+    frame_num = len(in_frame)
+    frame_index = 1 if count == 1 else frame_num
     frame_list = []
     for frame in in_frame:
         in_frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-        current_width = int(width * (frame_index / 150))
+        current_width = int(width * (frame_index / frame_num))
         in_frame_bgr[:, 0:current_width, :] = cyberpunk(in_frame_bgr[:, 0:current_width, :])
         f = cv2.cvtColor(in_frame_bgr, cv2.COLOR_BGR2RGB)
 
         frame_list.append(f)
 
-        if frame_index < 150:
+        if frame_index < frame_num:
             frame_index += 1
     
     out_frame = np.asarray(frame_list)
@@ -112,7 +113,7 @@ def main(params, action):
     context_dict = pickle.loads(context_dict_in_byte)
 
     threads = []
-    for i in range(1, 5):
+    for i in range(1, SERVER_NUM+1):
         t = threading.Thread(target=processFrame, args=(i, context_dict, action, width))
         t.start()
         threads.append(t)

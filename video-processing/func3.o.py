@@ -25,6 +25,7 @@ from disaggrt.rdma_array import remote_array
 
 import ffmpeg
 
+SERVER_NUM = 4
 LOCK1 = threading.Lock()
 LOCK2 = threading.Lock()
 
@@ -53,7 +54,7 @@ def main(params, action):
 
     threads = []
     map = {}
-    for i in range(1, 5):
+    for i in range(1, SERVER_NUM+1):
         t = threading.Thread(target=fetch, args=(i, context_dict, action, map))
         t.start()
         threads.append(t)
@@ -66,6 +67,7 @@ def main(params, action):
     video_probe = ffmpeg.probe(video_path)
     video_info = next((stream for stream in video_probe['streams'] if stream['codec_type'] == 'video'), None)
     video_frames = int(video_info['nb_frames'])
+    fps = int(video_info['r_frame_rate'][:-2])
     width = int(video_info['width'])
     height = int(video_info['height'])
     video_input = ffmpeg.input(video_path)
@@ -73,13 +75,13 @@ def main(params, action):
     tmp_path = 'tmp.mp4'
     tmp_process = (
         ffmpeg
-            .input('pipe:', format='rawvideo', pix_fmt='rgb24', s='{}x{}'.format(width, height), framerate=30)
-            .output(tmp_path, pix_fmt='yuv420p', r=30)
+            .input('pipe:', format='rawvideo', pix_fmt='rgb24', s='{}x{}'.format(width, height), framerate=fps)
+            .output(tmp_path, pix_fmt='yuv420p', r=fps)
             .overwrite_output()
             .run_async(pipe_stdin=True)
     )
 
-    for i in range(1, 5):
+    for i in range(1, SERVER_NUM+1):
         mem_name = "mem" + str(i)
         for frame in map[mem_name]:
             tmp_process.stdin.write(
@@ -94,7 +96,7 @@ def main(params, action):
     result_path = 'sample-mp4-file-new.mp4'
     (
         ffmpeg.input(tmp_path)
-              .output(video_input.audio, result_path, r=30)
+              .output(video_input.audio, result_path, r=fps)
               .run(overwrite_output=True)
     )
 

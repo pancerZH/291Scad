@@ -4,4 +4,4 @@ corunning:
     - func2
     - func3
 limits:
-    mem: 60 MB
+    mem: 128 MB

@@ -24,7 +24,7 @@ from disaggrt.rdma_array import remote_array
 
 import ffmpeg
 
-FRAME_NUM = 150
+SERVER_NUM = 4
 LOCK1 = threading.Lock()
 LOCK2 = threading.Lock()
 
@@ -54,11 +54,12 @@ def main(context_dict, action):
     video_probe = ffmpeg.probe(video_path)
     video_info = next((stream for stream in video_probe['streams'] if stream['codec_type'] == 'video'), None)
     video_frames = int(video_info['nb_frames'])
+    frame_num = video_frames // SERVER_NUM + (1 if video_frames % SERVER_NUM != 0 else 0)
     width = int(video_info['width'])
     height = int(video_info['height'])
     video_input = ffmpeg.input(video_path)
     in_process = (
-        video_input.video.output('pipe:', format='rawvideo', pix_fmt='rgb24', r=30).run_async(pipe_stdout=True)
+        video_input.video.output('pipe:', format='rawvideo', pix_fmt='rgb24').run_async(pipe_stdout=True)
     )
 
     count = 1
@@ -66,7 +67,7 @@ def main(context_dict, action):
     threads = []
     while True:
         # setup
-        in_bytes = in_process.stdout.read(width * height * 3 * FRAME_NUM)
+        in_bytes = in_process.stdout.read(width * height * 3 * frame_num)
         if not in_bytes:
             break
         
