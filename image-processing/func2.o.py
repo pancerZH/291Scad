@@ -1,6 +1,8 @@
 #@ type: compute
 #@ parents:
 #@   - func1
+#@ dependents:
+#@   - func3
 #@ corunning:
 #@   mem1:
 #@     trans: mem1
@@ -31,7 +33,6 @@ def TwoDPCA(imgs, dim):
     print('u_shape:{}'.format(u.shape))
     return u
 
-
 def TTwoDPCA(imgs, dim):
     u = TwoDPCA(imgs, dim)
     a1,b1,c1 = imgs.shape
@@ -54,7 +55,6 @@ def image_2D2DPCA(images, u, uu):
         new_images[i,:,:] = Y
     return new_images
 
-
 def processImage(context_dict, action):
     mem_name = "mem1"
     trans = action.get_transport(mem_name, 'rdma')
@@ -68,9 +68,15 @@ def processImage(context_dict, action):
 
     u, uu = TTwoDPCA(image_data, 10)
 
-    new_images = image_2D2DPCA(image_data, u, uu)
-    print('new_images_shape:{}'.format(new_images.shape))
+    new_image = image_2D2DPCA(image_data, u, uu)
+    print('new_images_shape:{}'.format(new_image.shape))
 
+    buffer_pool = buffer_pool_lib.buffer_pool({mem_name:trans}, context_dict["buffer_pool_metadata1"])
+    remote_output = remote_array(buffer_pool, input_ndarray=new_image, transport_name=mem_name)
+    # update context
+    remote_input_metadata = remote_output.get_array_metadata()
+    context_dict["remote_output1"] = remote_input_metadata
+    context_dict["buffer_pool_metadata1"] = buffer_pool.get_buffer_metadata()
 
 def main(params, action):
     context_dict_in_b64 = params["func1"][0]['meta']
