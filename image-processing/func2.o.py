@@ -26,18 +26,23 @@ def TwoDPCA(imgs, dim):
     # print('v_shape:{}'.format(v.shape))
     w = w[::-1]
     v = v[::-1]
-    '''
-    for k in range(c):
-        # alpha = sum(w[:k])*1.0/sum(w)
-        alpha = 0
-        if alpha >= p:
-            u = v[:,:k]
-            break
-    '''
-    print('alpha={}'.format(sum(w[:dim]*1.0/sum(w))))
+
     u = v[:,:dim]
     print('u_shape:{}'.format(u.shape))
     return u
+
+
+def TTwoDPCA(imgs, dim):
+    u = TwoDPCA(imgs, dim)
+    a1,b1,c1 = imgs.shape
+    img = []
+    for i in range(a1):
+        temp1 = np.dot(imgs[i,:,:],u)
+        img.append(temp1.T)
+    img = np.array(img)
+    uu = TwoDPCA(img, dim)
+    print('uu_shape:{}'.format(uu.shape))
+    return u,uu
 
 
 def processImage(count, context_dict):
@@ -50,6 +55,8 @@ def processImage(count, context_dict):
     image_data = load_image_remote.materialize()
 
     print('image_data_shape:{}'.format(image_data.shape))
+
+    u, uu = TTwoDPCA(image_data, 10)
 
 
 def main(params, action):
