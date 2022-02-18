@@ -45,7 +45,17 @@ def TTwoDPCA(imgs, dim):
     return u,uu
 
 
-def processImage(count, context_dict):
+def image_2D2DPCA(images, u, uu):
+    a, b, c = images.shape
+    new_images = np.ones((a, uu.shape[1], u.shape[1]))
+    for i in range(a):
+        Y = np.dot(uu.T, images[i,:,:])
+        Y = np.dot(Y, u)
+        new_images[i,:,:] = Y
+    return new_images
+
+
+def processImage(context_dict, action):
     mem_name = "mem1"
     trans = action.get_transport(mem_name, 'rdma')
     trans.reg(buffer_pool_lib.buffer_size)
@@ -57,6 +67,9 @@ def processImage(count, context_dict):
     print('image_data_shape:{}'.format(image_data.shape))
 
     u, uu = TTwoDPCA(image_data, 10)
+
+    new_images = image_2D2DPCA(image_data, u, uu)
+    print('new_images_shape:{}'.format(new_images.shape))
 
 
 def main(params, action):
