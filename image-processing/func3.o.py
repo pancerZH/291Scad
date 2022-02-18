@@ -6,7 +6,7 @@
 #@     trans: mem1
 #@     type: rdma
 
-import os
+from PIL import Image
 import pickle
 import numpy as np
 import base64
@@ -23,9 +23,19 @@ def fetch(context_dict, action):
     new_image = load_new_image.materialize()
 
     print('new_images_shape:{}'.format(new_image.shape))
+    return new_image
 
 def main(params, action):
     # Load from previous memory
     context_dict_in_b64 = params["func2"][0]['meta']
     context_dict_in_byte = base64.b64decode(context_dict_in_b64)
     context_dict = pickle.loads(context_dict_in_byte)
+
+    new_image = fetch(context_dict, action)
+
+    result_path = "new-image.jpg"
+
+    a,b,c = new_image.shape
+    new_image = new_image.reshape(b, c)
+    new_im = Image.fromarray(new_image , 'L')
+    new_im.save(result_path)
