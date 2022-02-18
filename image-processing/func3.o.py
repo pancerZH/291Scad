@@ -35,6 +35,7 @@ def main(params, action):
 
     result_path = "new-image.jpg"
 
+    # Save the new image
     a,b,c = new_image.shape
     new_image = new_image.reshape(b, c)
     new_im = Image.fromarray(new_image , 'L')
