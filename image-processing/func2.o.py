@@ -40,7 +40,7 @@ def TwoDPCA(imgs, dim):
     return u
 
 
-def processImage(count, context_dict, action, width):
+def processImage(count, context_dict):
     mem_name = "mem1"
     trans = action.get_transport(mem_name, 'rdma')
     trans.reg(buffer_pool_lib.buffer_size)
