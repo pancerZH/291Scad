@@ -19,7 +19,7 @@ def processDataSlice(data, context_dict, action):
     trans.reg(buffer_pool_lib.buffer_size)
     buffer_pool = buffer_pool_lib.buffer_pool({mem_name:trans})
 
-    print('data2_shape:{}'.format(data2.shape))
+    print('data_shape:{}'.format(data.shape))
 
     remote_input = remote_array(buffer_pool, input_ndarray=data, transport_name=mem_name)
 
