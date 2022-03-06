@@ -26,8 +26,8 @@ import ffmpeg
 
 SERVER_NUM = 4
 
-def processDataSlice(count, in_bytes, context_dict, action, height, width):
-    mem_name = "mem" + str(count) + 'npy'
+def processDataSlice(count, in_bytes, height, width):
+    mem_name = "mem" + str(count) + '.npy'
     in_frame = (
         np
             .frombuffer(in_bytes, np.uint8)
@@ -36,7 +36,7 @@ def processDataSlice(count, in_bytes, context_dict, action, height, width):
     with open(mem_name, 'wb') as f:
         np.save(f, in_frame)
 
-def main(context_dict, action):
+def main():
     # loading data
     video_path = 'sample-mp4-file.mp4'
     video_probe = ffmpeg.probe(video_path)
@@ -59,7 +59,7 @@ def main(context_dict, action):
         if not in_bytes:
             break
         
-        t = threading.Thread(target=processDataSlice, args=(count, in_bytes, context_dict, action, height, width))
+        t = threading.Thread(target=processDataSlice, args=(count, in_bytes, height, width))
         t.start()
         threads.append(t)
         
@@ -74,3 +74,6 @@ def main(context_dict, action):
     in_process.wait()
     context_dict_in_byte = pickle.dumps(context_dict)
     return {'meta': base64.b64encode(context_dict_in_byte).decode("ascii")}
+
+if __name__ == '__main__':
+    main()

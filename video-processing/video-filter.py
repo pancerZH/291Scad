@@ -4,7 +4,8 @@ import os
 from image import cyberpunk
 import cv2
 
-if __name__ == '__main__':
+@profile
+def main():
     # 源视频
     video_path = 'sample-mp4-file.mp4'
     video_probe = ffmpeg.probe(video_path)
@@ -72,3 +73,8 @@ if __name__ == '__main__':
 
     # 删除临时文件
     os.remove(tmp_path)
+    
+
+
+if __name__ == '__main__':
+    main()

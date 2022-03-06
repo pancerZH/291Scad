@@ -60,7 +60,7 @@ def cyberpunk(image):
     image_lab = np.asarray(image_lab, np.uint8)
     return cv2.cvtColor(image_lab, cv2.COLOR_Lab2BGR)
 
-def processFrame(count, context_dict, action, width):
+def processFrame(count, width):
     mem_name = "mem" + str(count) + '.npy'
     with open(mem_name, 'rb') as f:
         in_frame = np.load(f)
@@ -82,22 +82,16 @@ def processFrame(count, context_dict, action, width):
         out_name = "out" + str(count) + '.npy'
         with open(out_name, 'wb') as ff:
             np.save(ff, out_frame)
-        context_dict["remote_output" + str(count)] = remote_input_metadata
-        context_dict["buffer_pool_metadata" + str(count)] = buffer_pool.get_buffer_metadata()
 
 
-def main(params, action):
+def main():
     video_path = 'sample-mp4-file.mp4'
     video_probe = ffmpeg.probe(video_path)
     video_info = next((stream for stream in video_probe['streams'] if stream['codec_type'] == 'video'), None)
     width = int(video_info['width'])
 
-    context_dict_in_b64 = params["func1"][0]['meta']
-    context_dict_in_byte = base64.b64decode(context_dict_in_b64)
-    context_dict = pickle.loads(context_dict_in_byte)
-
     for i in range(1, SERVER_NUM+1):
-        processFrame(i, context_dict, action, width)
+        processFrame(i, width)
 
-    context_dict_in_byte = pickle.dumps(context_dict)
-    return {'meta': base64.b64encode(context_dict_in_byte).decode("ascii")}
+if __name__ == '__main__':
+    main()

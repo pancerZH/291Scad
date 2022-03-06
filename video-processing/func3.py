@@ -28,24 +28,20 @@ import ffmpeg
 SERVER_NUM = 4
 LOCK2 = threading.Lock()
 
-def fetch(count, context_dict, action, map):
-    mem_name = "out" + str(count)
+def fetch(count, map):
+    mem_name = "out" + str(count) + '.npy'
     with open(mem_name, 'rb') as f:
         in_frame = np.load(f)
         LOCK2.acquire()
         map[mem_name] = in_frame
         LOCK2.release()
 
-def main(params, action):
-    # Load from previous memory
-    context_dict_in_b64 = params["func2"][0]['meta']
-    context_dict_in_byte = base64.b64decode(context_dict_in_b64)
-    context_dict = pickle.loads(context_dict_in_byte)
-
+def main():
+    # Load from local
     threads = []
     map = {}
     for i in range(1, SERVER_NUM+1):
-        t = threading.Thread(target=fetch, args=(i, context_dict, action, map))
+        t = threading.Thread(target=fetch, args=(i, map))
         t.start()
         threads.append(t)
 
@@ -72,7 +68,7 @@ def main(params, action):
     )
 
     for i in range(1, SERVER_NUM+1):
-        mem_name = "mem" + str(i)
+        mem_name = "out" + str(i) + '.npy'
         for frame in map[mem_name]:
             tmp_process.stdin.write(
             frame
@@ -93,3 +89,6 @@ def main(params, action):
     os.remove(tmp_path)
 
     return result_path
+
+if __name__ == '__main__':
+    main()
