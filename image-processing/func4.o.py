@@ -58,6 +58,7 @@ def getNewImage(context_dict, action):
 
     result_path = "new-image.jpg"
     # Save the new image
+    print('new_image:{}'.format(new_image.shape))
     a,b,c = new_image.shape
     new_image = new_image.reshape(b, c)
     new_im = Image.fromarray(new_image , 'L')
