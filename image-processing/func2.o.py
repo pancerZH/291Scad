@@ -33,48 +33,29 @@ def TwoDPCA(imgs, dim):
     print('u_shape:{}'.format(u.shape))
     return u
 
-def TTwoDPCA(imgs, dim):
-    u = TwoDPCA(imgs, dim)
-    a1, b1, c1 = imgs.shape
-    img = []
-    for i in range(a1):
-        temp1 = np.dot(imgs[i,:,:],u)
-        img.append(temp1.T)
-    img = np.array(img)
-    uu = TwoDPCA(img, dim)
-    print('uu_shape:{}'.format(uu.shape))
-    return u, uu
-
-
-def image_2D2DPCA(images, u, uu):
-    a, b, c = images.shape
-    new_images = np.ones((a, uu.shape[1], u.shape[1]))
-    for i in range(a):
-        Y = np.dot(uu.T, images[i,:,:])
-        Y = np.dot(Y, u)
-        new_images[i,:,:] = Y
-    return new_images
-
 def processImage(context_dict, action):
-    mem_name = "mem1"
-    trans = action.get_transport(mem_name, 'rdma')
-    trans.reg(buffer_pool_lib.buffer_size)
+    mem_name1 = "mem1"
+    trans1 = action.get_transport(mem_name1, 'rdma')
+    trans1.reg(buffer_pool_lib.buffer_size)
 
-    buffer_pool = buffer_pool_lib.buffer_pool({mem_name:trans}, context_dict["buffer_pool_metadata1"])
-    load_image_remote = remote_array(buffer_pool, metadata=context_dict["remote_input1"])
+    buffer_pool1 = buffer_pool_lib.buffer_pool({mem_name1:trans1}, context_dict["buffer_pool_metadata1"])
+    load_image_remote = remote_array(buffer_pool1, metadata=context_dict["remote_input1"])
     image_data = load_image_remote.materialize()
     print('image_data_shape:{}'.format(image_data.shape))
 
-    u, uu = TTwoDPCA(image_data, 10)
-    new_image = image_2D2DPCA(image_data, u, uu)
-    print('new_images_shape:{}'.format(new_image.shape))
+    u = TwoDPCA(image_data, 10)
+    print('u_shape:{}'.format(u.shape))
 
-    buffer_pool = buffer_pool_lib.buffer_pool({mem_name:trans}, context_dict["buffer_pool_metadata1"])
-    remote_output = remote_array(buffer_pool, input_ndarray=new_image, transport_name=mem_name)
+    mem_name2 = "mem2"
+    trans2 = action.get_transport(mem_name2, 'rdma')
+    trans2.reg(buffer_pool_lib.buffer_size)
+
+    buffer_pool2 = buffer_pool_lib.buffer_pool({mem_name2:trans2}, context_dict["buffer_pool_metadata1"])
+    remote_output = remote_array(buffer_pool2, input_ndarray=u, transport_name=mem_name2)
     # update context
     remote_input_metadata = remote_output.get_array_metadata()
-    context_dict["remote_output1"] = remote_input_metadata
-    context_dict["buffer_pool_metadata1"] = buffer_pool.get_buffer_metadata()
+    context_dict["remote_output2"] = remote_input_metadata
+    context_dict["buffer_pool_metadata2"] = buffer_pool2.get_buffer_metadata()
 
 def main(params, action):
     context_dict_in_b64 = params["func1"][0]['meta']
