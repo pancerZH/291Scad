@@ -68,7 +68,7 @@ def processImage(context_dict, action):
     trans3 = action.get_transport(mem_name3, 'rdma')
     trans3.reg(buffer_pool_lib.buffer_size)
 
-    buffer_pool3 = buffer_pool_lib.buffer_pool({mem_name3:trans3}, context_dict["buffer_pool_metadata3"])
+    buffer_pool3 = buffer_pool_lib.buffer_pool({mem_name3:trans3})
     remote_output = remote_array(buffer_pool3, input_ndarray=uu, transport_name=mem_name3)
     # update context
     remote_input_metadata = remote_output.get_array_metadata()
