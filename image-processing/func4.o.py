@@ -35,7 +35,7 @@ def getNewImage(context_dict, action):
     mem_name2 = "mem2"
     trans2 = action.get_transport(mem_name2, 'rdma')
     trans2.reg(buffer_pool_lib.buffer_size)
-    mem_name3 = "mem2"
+    mem_name3 = "mem3"
     trans3 = action.get_transport(mem_name3, 'rdma')
     trans3.reg(buffer_pool_lib.buffer_size)
 
