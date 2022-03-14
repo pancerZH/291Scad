@@ -49,7 +49,7 @@ def getNewImage(context_dict, action):
     u = load_u.materialize()
     print('u_shape:{}'.format(u.shape))
 
-    buffer_pool3 = buffer_pool_lib.buffer_pool({mem_name2:trans3}, context_dict["buffer_pool_metadata2"])
+    buffer_pool3 = buffer_pool_lib.buffer_pool({mem_name3:trans3}, context_dict["buffer_pool_metadata2"])
     load_uu = remote_array(buffer_pool3, metadata=context_dict["remote_output3"])
     uu = load_uu.materialize()
     print('uu_shape:{}'.format(uu.shape))
