@@ -65,7 +65,7 @@ def getNewImage(context_dict, action):
 
 def main(params, action):
     # Load from previous memory
-    context_dict_in_b64 = params["func2"][0]['meta']
+    context_dict_in_b64 = params["func3"][0]['meta']
     context_dict_in_byte = base64.b64decode(context_dict_in_b64)
     context_dict = pickle.loads(context_dict_in_byte)
 
