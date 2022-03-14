@@ -57,7 +57,7 @@ def processImage(context_dict, action):
     print('image_data_shape:{}'.format(image_data.shape))
 
     buffer_pool2 = buffer_pool_lib.buffer_pool({mem_name2:trans2}, context_dict["buffer_pool_metadata2"])
-    load_u = remote_array(buffer_pool2, metadata=context_dict["remote_input2"])
+    load_u = remote_array(buffer_pool2, metadata=context_dict["remote_output2"])
     u = load_u.materialize()
     print('u_shape:{}'.format(u.shape))
 
