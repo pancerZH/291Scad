@@ -5,6 +5,12 @@
 #@   mem1:
 #@     trans: mem1
 #@     type: rdma
+#@   mem2:
+#@     trans: mem2
+#@     type: rdma
+#@   mem3:
+#@     trans: mem3
+#@     type: rdma
 
 from PIL import Image
 import pickle

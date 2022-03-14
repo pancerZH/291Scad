@@ -1,9 +1,17 @@
 #@ type: compute
 #@ parents:
 #@   - func2
+#@ dependents:
+#@   - func4
 #@ corunning:
 #@   mem1:
 #@     trans: mem1
+#@     type: rdma
+#@   mem2:
+#@     trans: mem2
+#@     type: rdma
+#@   mem3:
+#@     trans: mem3
 #@     type: rdma
 
 from PIL import Image
@@ -29,7 +37,6 @@ def TwoDPCA(imgs, dim):
     v = v[::-1]
 
     u = v[:,:dim]
-    print('u_shape:{}'.format(u.shape))
     return u
 
 def TTwoDPCA(imgs, u, dim):
@@ -40,7 +47,6 @@ def TTwoDPCA(imgs, u, dim):
         img.append(temp1.T)
     img = np.array(img)
     uu = TwoDPCA(img, dim)
-    print('uu_shape:{}'.format(uu.shape))
     return uu
 
 def processImage(context_dict, action):

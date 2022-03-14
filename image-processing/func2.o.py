@@ -7,6 +7,12 @@
 #@   mem1:
 #@     trans: mem1
 #@     type: rdma
+#@   mem2:
+#@     trans: mem2
+#@     type: rdma
+#@   mem3:
+#@     trans: mem3
+#@     type: rdma
 
 import pickle
 import numpy as np
@@ -30,7 +36,6 @@ def TwoDPCA(imgs, dim):
     v = v[::-1]
 
     u = v[:,:dim]
-    print('u_shape:{}'.format(u.shape))
     return u
 
 def processImage(context_dict, action):
